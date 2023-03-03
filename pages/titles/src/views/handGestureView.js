@@ -1,12 +1,16 @@
 export default class HandGestureView {
-  #handsCanvas = document.querySelector('#hands');
-  #canvasContext = this.#handsCanvas.getContext('2d');
+  #handsCanvas = document.querySelector('#hands')
+  #canvasContext = this.#handsCanvas.getContext('2d')
   #fingerLookupIndexes
-
-  constructor({ fingerLookupIndexes }) {
+  #styler
+  constructor({ fingerLookupIndexes, styler }) {
     this.#handsCanvas.width = globalThis.screen.availWidth
     this.#handsCanvas.height = globalThis.screen.availHeight
     this.#fingerLookupIndexes = fingerLookupIndexes
+    this.#styler = styler
+    
+    //  carrega os estilos assincronamente (evitar travar a tela enquanto carrega)
+    setTimeout(() => styler.loadDocumentStyles(), 200);
   }
 
   clearCanvas() {
@@ -15,21 +19,20 @@ export default class HandGestureView {
 
   drawResults(hands) {
     for (const { keypoints, handedness } of hands) {
-      if(!keypoints) continue;
+      if (!keypoints) continue
 
-      this.#canvasContext.fillStyle = handedness === "Left" ? "red" : "rgb(44, 212, 103)"
+      this.#canvasContext.fillStyle = handedness === "Left" ? "rgb(44, 212, 103)" : "rgb(44, 212, 103)"
       this.#canvasContext.strokeStyle = "white"
       this.#canvasContext.lineWidth = 8
       this.#canvasContext.lineJoin = "round"
 
       // juntas
       this.#drawJoients(keypoints)
-
-      //dedos
+      // dedos
       this.#drawFingersAndHoverElements(keypoints)
     }
   }
-
+  
   clickOnElement(x, y) {
     const element = document.elementFromPoint(x, y)
     if(!element) return;
@@ -40,14 +43,14 @@ export default class HandGestureView {
       bubbles: true,
       cancelable: true,
       clientX: rect.left + x,
-      clientY: rect.top + y,      
+      clientY: rect.top + y
     })
 
     element.dispatchEvent(event)
   }
 
   #drawJoients(keypoints) {
-    for(const { x, y } of keypoints) {
+    for (const { x, y } of keypoints) {
       this.#canvasContext.beginPath()
       const newX = x - 2
       const newY = y - 2
@@ -59,10 +62,9 @@ export default class HandGestureView {
       this.#canvasContext.fill()
     }
   }
-
   #drawFingersAndHoverElements(keypoints) {
     const fingers = Object.keys(this.#fingerLookupIndexes)
-    for(const finger of fingers) {
+    for (const finger of fingers) {
       const points = this.#fingerLookupIndexes[finger].map(
         index => keypoints[index]
       )
@@ -74,8 +76,21 @@ export default class HandGestureView {
         region.lineTo(point.x, point.y)
       }
       this.#canvasContext.stroke(region)
+      this.#hoverElement(finger, points)
     }
   }
+
+  #hoverElement(finger, points) {
+    if(finger !== "indexFinger") return
+    const tip = points.find(item => item.name === "index_finger_tip")
+    const element = document.elementFromPoint(tip.x, tip.y)
+    if(!element) return;
+    const fn = () => this.#styler.toggleStyle(element, ':hover')
+    fn()
+    
+    setTimeout(() => fn(), 500);
+  }
+
   loop(fn) {
     requestAnimationFrame(fn)
   }
@@ -86,4 +101,5 @@ export default class HandGestureView {
       behavior: "smooth"
     })
   }
+
 }

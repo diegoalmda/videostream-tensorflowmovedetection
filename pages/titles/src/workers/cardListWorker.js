@@ -8,5 +8,7 @@ onmessage = ({ data }) => {
   for (; counter < data.maxItems; counter++) console.log('.')
   console.timeEnd('blocking-op')
 
-  postMessage({ response: 'ok', data: counter })
+  postMessage(
+    { response: 'ok', data: counter }
+  )
 }
