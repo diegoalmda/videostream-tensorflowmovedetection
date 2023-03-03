@@ -14,7 +14,7 @@ Marque esse projeto com uma estrela 🌟
 
 ## Live demo
 
-- Para testar o projeto final [clique aqui] (https://diegoalmda.github.io/videostream-tensorflowmovedetection/pages/titles/) 
+- Para testar o projeto final [clique aqui](https://diegoalmda.github.io/videostream-tensorflowmovedetection/pages/titles/) 
 
 
 ## Running
